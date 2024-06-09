@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <!-- bootstrap 5 link -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- font awesome cdn link -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        
+    </style>
+
+</head>
+<body>
+    <div class="container p-5">
+        <form action="/" method="POST">
+            <input type="text" name="angka1" class="form-control" placeholder="Angka 1" style="max-width: 200px;">
+            <input type="text" name="angka2" class="form-control" placeholder="Angka 2" style="max-width: 200px;">
+            <button type="submit" name="submit" class="btn btn-primary">Kirim</button>
+        </form>
+
+        <div class="hasil">
+            <h5>{{ hasil }}</h5>
+            <form action="/" method="POST">
+                <button type="submit" name="clear" class="btn btn-secondary">Hapus</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
