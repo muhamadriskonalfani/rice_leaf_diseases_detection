@@ -80,5 +80,5 @@ def process_file(file_path):
     prediksi = classify_new_image(new_image)
     # print(f'Prediksi untuk gambar baru: {prediksi}')
     
-    custom_message = f'{prediksi}'
+    custom_message = f'File "{file_name}" telah diproses. {prediksi}'
     return custom_message

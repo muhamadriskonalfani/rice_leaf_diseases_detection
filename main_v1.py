@@ -10,27 +10,24 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     file_url = ''
-    file_name = ''
     custom_message = ''
     if request.method == 'POST':
         if 'submit' in request.form:
             file = request.files.get('file')
             if file:
-                file_name = file.filename
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], file_name)
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
                 file.save(file_path)
-                file_url = url_for('static', filename=f'uploads/{file_name}')
-                custom_message = process_file(file_path)  # Panggil fungsi di klasifikasi.py
+                file_url = url_for('static', filename=f'uploads/{file.filename}')
+                custom_message = process_file(file_path)  # Panggil fungsi di bebas.py
                 # Save the file path to the hidden input for later deletion
-                return render_template('index.html', file_url=file_url, file_path=file_path, file_name=file_name, custom_message=custom_message)
+                return render_template('index.html', file_url=file_url, file_path=file_path, custom_message=custom_message)
         elif 'clear' in request.form:
             file_path = request.form.get('file_path')
             if file_path and os.path.exists(file_path):
                 os.remove(file_path)
             file_url = ''
-            file_name = ''
             custom_message = ''
-    return render_template('index.html', file_url=file_url, file_path='', file_name=file_name, custom_message=custom_message)
+    return render_template('index.html', file_url=file_url, file_path='', custom_message=custom_message)
 
 if __name__ == '__main__':
     app.run(debug=True)
