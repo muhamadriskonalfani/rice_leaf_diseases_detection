@@ -196,6 +196,9 @@
 
 
 
+        h2, h5 {
+            margin: 0;
+        }
 
         .hide {
             display: none;
@@ -206,14 +209,13 @@
 
 </head>
 <body>
-    <div class="container-fluid">
+    <div id="loading"><h5 class="text-secondary">Membuat Model Klasifikasi...</h5></div>
+    <div class="container-fluid" style="display: none;">
         <div class="container left">
             <div class="box-input">
                 <div class="box-header">
                     <h2 class="text-secondary">Rice Leaf Diseases</h2>
-                    <div class="login-btn">
-                        <button class="btn btn-primary btn-md">Login</button>
-                    </div>
+                    <h5 id="hasil_load" class="text-secondary">Rice Leaf Diseases</h5>
                 </div>
                 <div class="box-main-input">
                     <form action="/" method="POST" enctype="multipart/form-data">
@@ -282,11 +284,23 @@
                 <div class="spinner"></div>
                 <div id="progress-percentage">100%</div>
             </div>
-            <h1 class="step-process mt-4">Memindai</h1>
+            <h2 class="step-process text-secondary mt-4">Memindai</h2>
         </div>
     </div>
 
     <script>
+        // Membuat model klasifikasi sebelum halaman ditampilkan
+        document.addEventListener('DOMContentLoaded', async function() {
+            const response = await fetch('/latih_model_klasifikasi', {
+                method: 'GET'
+            });
+            const data = await response.json();
+            document.getElementById('hasil_load').innerText = `Status Model: ${data.hasil_model}`;
+            document.getElementById('loading').style.display = 'none';
+            document.querySelector('.container-fluid').style.display = 'flex';
+        });
+
+
         const containerLeft     = document.querySelector('.container.left')
         const containerRight    = document.querySelector('.container.right')
         const leftButton        = document.getElementById('leftButton')
@@ -366,7 +380,7 @@
                 .then(data => {
                     if (data.progress < 101) {
                         document.getElementById('progress-percentage').innerText = `${data.progress}%`;
-                        setTimeout(updateProgress, 500);
+                        setTimeout(updateProgress, 200);
                     } 
                 });
         }

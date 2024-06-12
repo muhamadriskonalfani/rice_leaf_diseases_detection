@@ -16,6 +16,7 @@ file_url = ''
 file_name = ''
 file_path = ''
 custom_message = ''
+model = ''
 progress = 0  # Menyimpan progress
 
 @app.route('/', methods=['GET', 'POST'])
@@ -30,7 +31,7 @@ def index():
                 file.save(file_path)
                 file_url = url_for('static', filename=f'uploads/{file_name}')
                 progress = 0  # Set progress kembali ke 0
-                long_task()  # Panggil fungsi long_task untuk memproses gambar
+                klasifikasi_gambar_baru()  # Panggil fungsi klasifikasi_gambar_baru untuk memproses gambar
                 return render_template('index.html', file_url=file_url, file_path=file_path, file_name=file_name, custom_message=custom_message)
         elif 'clear' in request.form:
             file_path = request.form.get('file_path')
@@ -80,59 +81,64 @@ def classify_new_image(image):
 
     return prediction[0]
 
+@app.route('/latih_model_klasifikasi')
+def latih_model_klasifikasi():
+    global model
+    if model:
+        hasil_model = 'Aktif'
+        return jsonify({'hasil_model': hasil_model})
+    else:
+        # Langkah 1: Memuat dataset dari folder lokal
+        folder_path = './rice_leaf_diseases'
+        images, labels = load_images_from_folder(folder_path)
+
+        # Langkah 2: Pra-pemrosesan setiap gambar
+        preprocessed_images = [preprocess_image(cv2.resize(image, (384, 128))) for image in images]
+
+        # Langkah 3: Ekstraksi fitur HOG untuk setiap gambar yang sudah dipra-pemrosesan
+        features = [extract_hog_features(image) for image in preprocessed_images]
+
+        # Langkah 4: Menyatukan fitur HOG menjadi satu array homogen
+        X = np.array(features)
+        y = np.array(labels)
+
+        # Langkah 5: Membagi dataset menjadi training dan testing set
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.6, random_state=42)
+
+        # Langkah 6: Inisialisasi model SVM
+        model = svm.SVC(kernel='linear')
+
+        # Langkah 7: Melatih model SVM
+        model.fit(X_train, y_train)
+        
+        hasil_model = 'Aktif'
+        return jsonify({'hasil_model': hasil_model})
+
 @app.route('/progress')
 def progress_status():
     global progress
     return jsonify({'progress': progress})
 
-@app.route('/long_task')
-def long_task():
+@app.route('/klasifikasi_gambar_baru')
+def klasifikasi_gambar_baru():
     global file_path, custom_message, progress
     
-    def update_progress(val, delay):
+    def update_progress(val, delay=0):
         global progress
         progress = val
         time.sleep(delay)
 
-    # Langkah 1: Memuat dataset dari folder lokal
-    folder_path = './rice_leaf_diseases'
-    images, labels = load_images_from_folder(folder_path)
-    update_progress(10, 1)  # Update progress
-    update_progress(20, 1)  # Update progress
-
-    # Langkah 2: Pra-pemrosesan setiap gambar
-    preprocessed_images = [preprocess_image(cv2.resize(image, (384, 128))) for image in images]
-    update_progress(30, 1)  # Update progress
-
-    # Langkah 3: Ekstraksi fitur HOG untuk setiap gambar yang sudah dipra-pemrosesan
-    features = [extract_hog_features(image) for image in preprocessed_images]
-    update_progress(40, 1)  # Update progress
-    update_progress(50, 1)  # Update progress
-
-    # Langkah 4: Menyatukan fitur HOG menjadi satu array homogen
-    X = np.array(features)
-    y = np.array(labels)
-    update_progress(60, 1)  # Update progress
-
-    # Langkah 5: Membagi dataset menjadi training dan testing set
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.6, random_state=42)
-    update_progress(70, 1)  # Update progress
-
-    # Langkah 6: Inisialisasi model SVM
-    global model
-    model = svm.SVC(kernel='linear')
-
-    # Langkah 7: Melatih model SVM
-    model.fit(X_train, y_train)
-    update_progress(80, 1)  # Update progress
-
     # Langkah 8: Klasifikasi gambar baru
     new_image = cv2.imread(file_path)
-    update_progress(90, 1)  # Update progress
     prediction = classify_new_image(new_image)
     custom_message = f'{prediction}'
 
-    update_progress(100, 2)  # Update progress
+    steps = 99
+    for step in range(steps):
+        time.sleep(0.05)
+        update_progress(step)
+        
+    update_progress(100, 1)  # Update progress
     update_progress(101, 1)  # Update progress
     return jsonify({'status': 'Task completed!', 'message': custom_message})
 
