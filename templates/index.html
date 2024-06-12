@@ -54,6 +54,7 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
+            overflow: scroll;
         
             /* border: var(--border); */
         }
@@ -62,7 +63,7 @@
             position: absolute;
             padding: 20px;
             text-align: center;
-            transition: all 0.8s ease; /* Smooth transition */
+            transition: all 0.8s ease; 
         }
         
         .left {
@@ -73,7 +74,7 @@
         
         .right {
             width: 50rem;
-            right: -50rem; /* Adjust this value to position the element outside the page */
+            right: -50rem; 
         }
         
         
@@ -123,10 +124,83 @@
             text-align: center;
         }
         
+
+        .container-loading {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: white;
+        }
         
+        .spinner-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 8rem;
+            height: 8rem;
+            overflow: hidden;
+            border-radius: 50%;
+        }
+
+        .spinner {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 8rem;
+            height: 8rem;
+            background: #0f0;
+            border-radius: 50%;
+            animation: animate 1s linear infinite;
+        }
+        
+        .spinner::before {
+            content: '';
+            position: absolute;
+            width: 5rem;
+            height: 5rem;
+            transform: rotate(45deg);
+            background: white;
+            right: -3rem;
+        }
+
+        .spinner::after {
+            content: '';
+            position: absolute;
+            inset: 1rem;
+            background: white;
+            border-radius: 50%;
+        }
+
+        @keyframes animate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        #progress-percentage {
+            position: absolute;
+            font-size: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+        }
+
+
+
+
         .hide {
             display: none;
         }
+
                 
     </style>
 
@@ -202,6 +276,14 @@
             
             <button id="rightButton" class="btn btn-primary">Kembali</button>
         </div>
+
+        <div class="container-loading" style="display: none;">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <div id="progress-percentage">100%</div>
+            </div>
+            <h1 class="step-process mt-4">Memindai</h1>
+        </div>
     </div>
 
     <script>
@@ -275,6 +357,25 @@
         function detail() {
             leftButton.click();
         }
+
+
+        // Update progress bar
+        function updateProgress() {
+            fetch('/progress')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.progress < 101) {
+                        document.getElementById('progress-percentage').innerText = `${data.progress}%`;
+                        setTimeout(updateProgress, 500);
+                    } 
+                });
+        }
+
+        submitButton.addEventListener('click', function() {
+            updateProgress();
+            document.querySelector('.container-loading').style.display = 'flex';
+        })
+        
 
     </script>
 </body>

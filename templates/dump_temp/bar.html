@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Progress Bar Example</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="{{ url_for('static', filename='progress.js') }}"></script>
+    <style>
+        .spinner-border {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 8rem;
+            height: 8rem;
+            overflow: hidden;
+            border-radius: 50%;
+        }
+        .spinner {
+            position: relative;
+            width: 8rem;
+            height: 8rem;
+            border: 1rem solid #0f0;
+            border-radius: 50%;
+            animation: animate 1s linear infinite;
+        }
+        
+        .spinner::before {
+            content: '';
+            position: absolute;
+            width: 5rem;
+            height: 5rem;
+            transform: rotate(45deg);
+            background: white;
+            right: -3rem;
+        }
+
+        @keyframes animate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        #progress-percentage {
+            position: absolute;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Progress Bar Example</h1>
+        <button id="start-task" class="btn btn-primary mb-3">Start Task</button>
+        <div class="spinner-border">
+            <div class="spinner"></div>
+            <div id="progress-percentage">0%</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('start-task').addEventListener('click', function() {
+                fetch('/long_task')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        document.getElementById('progress-percentage').innerText = '100%';
+                    });
+        
+                let progress = 0;
+                const interval = setInterval(function() {
+                    progress += 1;
+                    document.getElementById('progress-percentage').innerText = progress + '%';
+        
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                    }
+                }, 100);
+            });
+        });
+        
+    </script>
+</body>
+</html>
