@@ -81,62 +81,77 @@ def classify_new_image(image):
 
     return prediction[0]
 
-@app.route('/latih_model_klasifikasi')
-def latih_model_klasifikasi():
-    global model
-    if model:
-        hasil_model = 'Aktif'
-        return jsonify({'hasil_model': hasil_model})
-    else:
-        # Langkah 1: Memuat dataset dari folder lokal
-        folder_path = './rice_leaf_diseases'
-        images, labels = load_images_from_folder(folder_path)
-
-        # Langkah 2: Pra-pemrosesan setiap gambar
-        preprocessed_images = [preprocess_image(cv2.resize(image, (384, 128))) for image in images]
-
-        # Langkah 3: Ekstraksi fitur HOG untuk setiap gambar yang sudah dipra-pemrosesan
-        features = [extract_hog_features(image) for image in preprocessed_images]
-
-        # Langkah 4: Menyatukan fitur HOG menjadi satu array homogen
-        X = np.array(features)
-        y = np.array(labels)
-
-        # Langkah 5: Membagi dataset menjadi training dan testing set
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.6, random_state=42)
-
-        # Langkah 6: Inisialisasi model SVM
-        model = svm.SVC(kernel='linear')
-
-        # Langkah 7: Melatih model SVM
-        model.fit(X_train, y_train)
-        
-        hasil_model = 'Aktif'
-        return jsonify({'hasil_model': hasil_model})
+def update_progress(val, delay=0):
+    global progress
+    progress = val
+    time.sleep(delay)
+    
+def loop_update_progress(start, end):
+    for step in range(start, end):
+        time.sleep(0.05)
+        update_progress(step)
 
 @app.route('/progress')
 def progress_status():
     global progress
     return jsonify({'progress': progress})
 
+@app.route('/latih_model_klasifikasi')
+def latih_model_klasifikasi():
+    global model, progress
+    
+    if model:
+        progress = 101  # Untuk menghentikan fetch dari index.html
+        hasil_model = 'Aktif'
+        return jsonify({'hasil_model': hasil_model})
+    else:
+        update_progress(0, 2)  # Update progress
+        loop_update_progress(1, 14) # Update progress
+        
+        # Langkah 1: Memuat dataset dari folder lokal
+        folder_path = './rice_leaf_diseases'
+        images, labels = load_images_from_folder(folder_path)
+        loop_update_progress(15, 27) # Update progress
+
+        # Langkah 2: Pra-pemrosesan setiap gambar
+        preprocessed_images = [preprocess_image(cv2.resize(image, (384, 128))) for image in images]
+        loop_update_progress(28, 37) # Update progress
+
+        # Langkah 3: Ekstraksi fitur HOG untuk setiap gambar yang sudah dipra-pemrosesan
+        features = [extract_hog_features(image) for image in preprocessed_images]
+        loop_update_progress(48, 60) # Update progress
+
+        # Langkah 4: Menyatukan fitur HOG menjadi satu array homogen
+        X = np.array(features)
+        y = np.array(labels)
+        loop_update_progress(61, 73) # Update progress
+
+        # Langkah 5: Membagi dataset menjadi training dan testing set
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.6, random_state=42)
+        loop_update_progress(74, 86) # Update progress
+
+        # Langkah 6: Inisialisasi model SVM
+        model = svm.SVC(kernel='linear')
+        loop_update_progress(87, 99) # Update progress
+
+        # Langkah 7: Melatih model SVM
+        model.fit(X_train, y_train)
+        update_progress(100, 1)  # Update progress
+        update_progress(101, 1)  # Update progress
+        
+        hasil_model = 'Aktif'
+        return jsonify({'hasil_model': hasil_model})
+
 @app.route('/klasifikasi_gambar_baru')
 def klasifikasi_gambar_baru():
-    global file_path, custom_message, progress
-    
-    def update_progress(val, delay=0):
-        global progress
-        progress = val
-        time.sleep(delay)
+    global file_path, custom_message
 
     # Langkah 8: Klasifikasi gambar baru
     new_image = cv2.imread(file_path)
     prediction = classify_new_image(new_image)
     custom_message = f'{prediction}'
 
-    steps = 99
-    for step in range(steps):
-        time.sleep(0.05)
-        update_progress(step)
+    loop_update_progress(0, 99) # Update progress
         
     update_progress(100, 1)  # Update progress
     update_progress(101, 1)  # Update progress

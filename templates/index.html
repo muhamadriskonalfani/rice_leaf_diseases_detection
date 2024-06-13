@@ -209,7 +209,6 @@
 
 </head>
 <body>
-    <div id="loading"><h5 class="text-secondary">Membuat Model Klasifikasi...</h5></div>
     <div class="container-fluid" style="display: none;">
         <div class="container left">
             <div class="box-input">
@@ -278,26 +277,43 @@
             
             <button id="rightButton" class="btn btn-primary">Kembali</button>
         </div>
+    </div>
 
-        <div class="container-loading" style="display: none;">
-            <div class="spinner-container">
-                <div class="spinner"></div>
-                <div id="progress-percentage">100%</div>
-            </div>
-            <h2 class="step-process text-secondary mt-4">Memindai</h2>
+    <div class="container-loading">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div id="progress-percentage">100%</div>
         </div>
+        <h2 class="step-process text-secondary mt-4">Membuat Model Klasifikasi</h2>
     </div>
 
     <script>
-        // Membuat model klasifikasi sebelum halaman ditampilkan
-        document.addEventListener('DOMContentLoaded', async function() {
+        // Update progress bar
+        function updateProgress() {
+            fetch('/progress')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.progress < 101) {
+                        document.getElementById('progress-percentage').innerText = `${data.progress}%`;
+                        setTimeout(updateProgress, 200);
+                    } 
+                });
+        }
+
+        async function trainModelClassification() {
             const response = await fetch('/latih_model_klasifikasi', {
                 method: 'GET'
             });
             const data = await response.json();
             document.getElementById('hasil_load').innerText = `Status Model: ${data.hasil_model}`;
-            document.getElementById('loading').style.display = 'none';
+            document.querySelector('.container-loading').style.display = 'none';
             document.querySelector('.container-fluid').style.display = 'flex';
+        }
+
+        // Membuat model klasifikasi sebelum halaman ditampilkan
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgress();
+            trainModelClassification();
         });
 
 
@@ -373,21 +389,12 @@
         }
 
 
-        // Update progress bar
-        function updateProgress() {
-            fetch('/progress')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.progress < 101) {
-                        document.getElementById('progress-percentage').innerText = `${data.progress}%`;
-                        setTimeout(updateProgress, 200);
-                    } 
-                });
-        }
 
         submitButton.addEventListener('click', function() {
-            updateProgress();
+            document.querySelector('.container-fluid').style.display = 'none';
+            document.querySelector('.container-loading .step-process').innerText = 'Memindai';
             document.querySelector('.container-loading').style.display = 'flex';
+            setTimeout(updateProgress, 200);
         })
         
 
